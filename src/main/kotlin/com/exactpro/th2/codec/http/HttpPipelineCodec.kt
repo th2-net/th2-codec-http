@@ -47,6 +47,7 @@ import rawhttp.core.RequestLine
 import rawhttp.core.StartLine
 import rawhttp.core.StatusLine
 import rawhttp.core.Writable
+import rawhttp.core.body.BodyReader
 import rawhttp.core.body.BytesBody
 import java.io.ByteArrayOutputStream
 import java.net.URI
@@ -280,15 +281,17 @@ class HttpPipelineCodec : IPipelineCodec {
                 }
             }.build()
 
-            body.ifPresent {
-                builder += it.asRawBytes().toRawMessage(
-                    metadata.timestamp,
-                    messageId,
-                    metadataProperties,
-                    additionalMetadataProperties,
-                    subsequence + 2
-                )
-            }
+            body.map(BodyReader::asRawBytes)
+                .filter(ByteArray::isNotEmpty)
+                .ifPresent {
+                    builder += it.toRawMessage(
+                        metadata.timestamp,
+                        messageId,
+                        metadataProperties,
+                        additionalMetadataProperties,
+                        subsequence + 2
+                    )
+                }
         }
 
         private fun RawHttpRequest.convert(
