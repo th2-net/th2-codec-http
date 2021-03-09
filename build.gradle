@@ -1,12 +1,13 @@
 plugins {
-    id 'com.palantir.docker' version '0.25.0' apply false
-    id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}"
+    id 'com.palantir.docker' version '0.25.0'
+    id "com.jfrog.bintray" version '1.8.5'
     id 'com.github.harbby.gradle.serviceloader' version '1.1.5'
+    id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}"
+    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'application'
 }
-
-apply plugin: 'kotlin'
-apply plugin: 'application'
-apply plugin: 'com.palantir.docker'
 
 ext {
     sharedDir = file("${project.rootDir}/shared")
@@ -20,24 +21,18 @@ sourceCompatibility = 11
 targetCompatibility = 11
 
 repositories {
+    mavenLocal()
     maven {
         name 'MavenLocal'
         url sharedDir
     }
-
     mavenCentral()
-
     maven {
-        name 'TH2 Bintray'
+        name 'Bintray'
         url 'https://dl.bintray.com/exactpro/th2'
     }
-
-    maven {
-        name 'Artifactory release'
-        url 'http://artifactory5.exp.exactpro.com/artifactory/libs-release'
-    }
-
-    mavenLocal()
+    mavenCentral()
+    jcenter()
 
     configurations.all {
         resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
@@ -57,6 +52,66 @@ jar {
                 'Implementation-Version': project.version
         )
     }
+}
+
+// prevent publish to Bintray from gitlab
+tasks.withType(PublishToMavenRepository) {
+    onlyIf {
+        (publication == publishing.publications.mavenJava)
+    }
+}
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+        bintrayPublication(MavenPublication) {
+            from components.java
+            groupId group
+            artifactId rootProject.name
+            version project.version
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('name', rootProject.name)
+                root.appendNode('url', "${vcs_url}")
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'localRepo'
+            url = sharedDir
+        }
+        //Nexus repo for publish from gitlab
+        maven {
+            name = 'nexusRepository'
+            credentials {
+                username = "${nexus_user}"
+                password = "${nexus_password}"
+            }
+            url = "${nexus_url}"
+        }
+    }
+}
+
+bintray {
+    user = "${bintray_user}"
+    key = "${bintray_key}"
+    publications = ['bintrayPublication']
+    pkg {
+        repo = 'th2'
+        name = rootProject.name
+        userOrg = 'exactpro'
+        licenses = ['Apache-2.0']
+        vcsUrl = "${vcs_url}"
+        version {
+            name = project.version
+            desc = project.version
+            released  = new Date()
+        }
+    }
+    publish = true
 }
 
 dependencies {
