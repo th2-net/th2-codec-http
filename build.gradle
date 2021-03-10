@@ -31,7 +31,6 @@ repositories {
         name 'Bintray'
         url 'https://dl.bintray.com/exactpro/th2'
     }
-    mavenCentral()
     jcenter()
 
     configurations.all {
