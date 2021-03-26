@@ -281,7 +281,7 @@ class HttpPipelineCodec : IPipelineCodec {
                 }
             }.build()
 
-            body.map(BodyReader::asRawBytes)
+            body.map(BodyReader::decodeBody)
                 .filter(ByteArray::isNotEmpty)
                 .ifPresent {
                     builder += it.toRawMessage(
