@@ -1,5 +1,9 @@
 # Inputs/outputs
 
+## protocol
+
+This codec processes parsed messages with `http` protocol in metadata field
+
 ## encode
 
 * input - `MessageGroup` with at most 2 messages:
