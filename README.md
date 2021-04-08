@@ -1,10 +1,14 @@
 # Inputs/outputs
 
+## protocol
+
+This codec processes parsed messages with `http` protocol in metadata field
+
 ## encode
 
 * input - `MessageGroup` with at most 2 messages:
 
-    1. HTTP message - `Message` with `Request` or `Response` type
+    1. HTTP message - `Message` with `Request` or `Response` type (protocol = `http`)
     2. HTTP message body - `RawMessage` with a raw message body (if present)
 
 * output - `MessageGroup` with a single `RawMessage` with encoded HTTP message
@@ -14,7 +18,7 @@
 * input - `MessageGroup` with a single `RawMessage` with a raw HTTP request/response
 * output - `MessageGroup` with at most 2 messages:
 
-    1. HTTP message - `Message` with `Request` or `Response` type
+    1. HTTP message - `Message` with `Request` or `Response` type (protocol = `http`)
     2. HTTP message body - `RawMessage` with a raw message body (if present)
 
 If decoded message was an HTTP request, message body metadata would contain `method` and `uri` properties with HTTP request method name and URI respectively
