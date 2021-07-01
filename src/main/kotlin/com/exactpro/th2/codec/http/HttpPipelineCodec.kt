@@ -231,9 +231,8 @@ class HttpPipelineCodec : IPipelineCodec {
             eventID: EventID
         ): RawMessage = RawMessage.newBuilder().apply {
             this.body = ByteString.copyFrom(this@toRawMessage)
-            //parentEventIdBuilder.mergeFrom(eventID)
+            parentEventIdBuilder.mergeFrom(eventID)
             this.metadataBuilder {
-                parentEventId = eventID
                 putAllProperties(metadataProperties)
                 additionalMetadataProperties?.run(::putAllProperties)
                 this.timestamp = timestamp
@@ -260,8 +259,7 @@ class HttpPipelineCodec : IPipelineCodec {
 
             builder += Message.newBuilder().apply {
                 handleStartLine(startLine as T, this, additionalMetadataProperties)
-
-                parentEventId = source.parentEventId
+                parentEventIdBuilder.mergeFrom(source.parentEventId)
 
                 if (!headers.isEmpty) {
                     val headerList = arrayListOf<Value>()
