@@ -73,6 +73,7 @@ dependencies {
     implementation group: 'com.athaydes.rawhttp', name: 'rawhttp-core', version: '2.4.1'
 
     testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit5', version: kotlin_version
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
 }
 
 application {
@@ -109,4 +110,8 @@ serviceLoader {
     serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodec'
     serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecSettings'
     serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecSettingsTypeProvider'
+}
+
+test {
+    useJUnitPlatform()
 }

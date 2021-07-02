@@ -23,6 +23,7 @@ import com.exactpro.th2.common.grpc.AnyMessage.KindCase.MESSAGE
 import com.exactpro.th2.common.grpc.AnyMessage.KindCase.RAW_MESSAGE
 import com.exactpro.th2.common.grpc.Direction.FIRST
 import com.exactpro.th2.common.grpc.Direction.SECOND
+import com.exactpro.th2.common.grpc.EventID
 import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.MessageID
@@ -127,7 +128,8 @@ class HttpPipelineCodec : IPipelineCodec {
             metadata.timestamp,
             metadata.id,
             metadata.propertiesMap,
-            body?.metadata?.propertiesMap
+            body?.metadata?.propertiesMap,
+            eventID = message.parentEventId
         )
 
         return builder.build()
@@ -165,15 +167,15 @@ class HttpPipelineCodec : IPipelineCodec {
     }
 
     companion object {
-        private const val PROTOCOL = "http"
+        const val PROTOCOL = "http"
 
-        private const val REQUEST_MESSAGE = "Request"
-        private const val RESPONSE_MESSAGE = "Response"
-        private const val METHOD_FIELD = "method"
-        private const val URI_FIELD = "uri"
-        private const val STATUS_CODE_FIELD = "statusCode"
-        private const val REASON_FIELD = "reason"
-        private const val HEADERS_FIELD = "headers"
+        const val REQUEST_MESSAGE = "Request"
+        const val RESPONSE_MESSAGE = "Response"
+        const val METHOD_FIELD = "method"
+        const val URI_FIELD = "uri"
+        const val STATUS_CODE_FIELD = "statusCode"
+        const val REASON_FIELD = "reason"
+        const val HEADERS_FIELD = "headers"
         private const val HEADER_NAME_FIELD = "name"
         private const val HEADER_VALUE_FIELD = "value"
 
@@ -225,9 +227,11 @@ class HttpPipelineCodec : IPipelineCodec {
             messageId: MessageID,
             metadataProperties: Map<String, String>,
             additionalMetadataProperties: Map<String, String>? = null,
-            subsequence: Iterable<Int> = messageId.subsequenceList.dropLast(1)
+            subsequence: Iterable<Int> = messageId.subsequenceList.dropLast(1),
+            eventID: EventID
         ): RawMessage = RawMessage.newBuilder().apply {
             this.body = ByteString.copyFrom(this@toRawMessage)
+            parentEventIdBuilder.mergeFrom(eventID)
             this.metadataBuilder {
                 putAllProperties(metadataProperties)
                 additionalMetadataProperties?.run(::putAllProperties)
@@ -255,6 +259,7 @@ class HttpPipelineCodec : IPipelineCodec {
 
             builder += Message.newBuilder().apply {
                 handleStartLine(startLine as T, this, additionalMetadataProperties)
+                parentEventIdBuilder.mergeFrom(source.parentEventId)
 
                 if (!headers.isEmpty) {
                     val headerList = arrayListOf<Value>()
@@ -289,7 +294,8 @@ class HttpPipelineCodec : IPipelineCodec {
                         messageId,
                         metadataProperties,
                         additionalMetadataProperties,
-                        subsequence + 2
+                        subsequence + 2,
+                        source.parentEventId
                     )
                 }
         }
