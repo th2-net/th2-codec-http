@@ -1,4 +1,4 @@
-# HTTP Codec v0.0.9
+# HTTP Codec v0.0.8
 
 This microservice can encode and decode HTTP messages
 
