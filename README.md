@@ -1,10 +1,16 @@
-# Inputs/outputs
+# HTTP Codec v0.0.9
 
-## protocol
+This microservice can encode and decode HTTP messages
+
+## Configuration
+
+This codec has no settings
+
+## Protocol
 
 This codec processes parsed messages with `http` protocol in metadata field
 
-## encode
+## Encoding
 
 * input - `MessageGroup` with at most 2 messages:
 
@@ -13,7 +19,7 @@ This codec processes parsed messages with `http` protocol in metadata field
 
 * output - `MessageGroup` with a single `RawMessage` with encoded HTTP message
 
-## decode
+## Decoding
 
 * input - `MessageGroup` with a single `RawMessage` with a raw HTTP request/response
 * output - `MessageGroup` with at most 2 messages:
@@ -23,7 +29,7 @@ This codec processes parsed messages with `http` protocol in metadata field
 
 If decoded message was an HTTP request, message body metadata would contain `method` and `uri` properties with HTTP request method name and URI respectively
 
-# Message types
+## Message types
 
 * Request
 
@@ -47,3 +53,68 @@ If decoded message was an HTTP request, message body metadata would contain `met
 |:---:|:---:|:---:|
 |name|String|HTTP header name|
 |value|String|HTTP header value|
+
+## Deployment via `infra-mgr`
+
+Here's an example of `infra-mgr` config required to deploy this service
+
+```yaml
+apiVersion: th2.exactpro.com/v1
+kind: Th2Box
+metadata:
+  name: codec-http
+spec:
+  image-name: ghcr.io/th2-net/th2-codec-http
+  image-version: 0.0.8
+  custom-config:
+    codecSettings:
+  type: th2-conn
+  pins:
+    # encoder
+    - name: in_codec_encode
+      connection-type: mq
+      attributes:
+        - encoder_in
+        - subscribe
+    - name: out_codec_encode
+      connection-type: mq
+      attributes:
+        - encoder_out
+        - publish
+    # decoder
+    - name: in_codec_decode
+      connection-type: mq
+      attributes:
+        - decoder_in
+        - subscribe
+    - name: out_codec_decode
+      connection-type: mq
+      attributes:
+        - decoder_out
+        - publish
+    # encoder general (technical)
+    - name: in_codec_general_encode
+      connection-type: mq
+      attributes:
+        - general_encoder_in
+        - subscribe
+    - name: out_codec_general_encode
+      connection-type: mq
+      attributes:
+        - general_encoder_out
+        - publish
+    # decoder general (technical)
+    - name: in_codec_general_decode
+      connection-type: mq
+      attributes:
+        - general_decoder_in
+        - subscribe
+    - name: out_codec_general_decode
+      connection-type: mq
+      attributes:
+        - general_decoder_out
+        - publish
+  extended-settings:
+    service:
+      enabled: false
+```
