@@ -7,8 +7,6 @@ on:
       - version-*
     paths:
       - gradle.properties
-    paths-ignore:
-    - README.md
 
 jobs:
   build:
