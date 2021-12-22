@@ -16,9 +16,8 @@
 
 package com.exactpro.th2.codec.http
 
-import com.exactpro.sf.common.messages.structures.IDictionaryStructure
 import com.exactpro.th2.codec.api.IPipelineCodec
-import com.exactpro.th2.codec.api.IPipelineCodecSettings
+import com.exactpro.th2.codec.http.HttpPipelineCodecFactory.Companion.PROTOCOL
 import com.exactpro.th2.common.grpc.AnyMessage.KindCase.MESSAGE
 import com.exactpro.th2.common.grpc.AnyMessage.KindCase.RAW_MESSAGE
 import com.exactpro.th2.common.grpc.Direction.FIRST
@@ -55,10 +54,6 @@ import java.net.URI
 import kotlin.text.Charsets.UTF_8
 
 class HttpPipelineCodec : IPipelineCodec {
-    override val protocol: String = PROTOCOL
-
-    override fun init(dictionary: IDictionaryStructure, settings: IPipelineCodecSettings?) {}
-
     override fun encode(messageGroup: MessageGroup): MessageGroup {
         val messages = messageGroup.messagesList
 
@@ -71,7 +66,7 @@ class HttpPipelineCodec : IPipelineCodec {
 
         val message = messages[0].message
 
-        require(message.metadata.protocol == protocol) { "Unsupported protocol: ${message.metadata.protocol}" }
+        require(message.metadata.protocol == PROTOCOL) { "Unsupported protocol: ${message.metadata.protocol}" }
 
         val body: RawMessage? = messages.getOrNull(1)?.run {
             require(kindCase == RAW_MESSAGE) { "Second message must be a raw message" }
@@ -167,8 +162,6 @@ class HttpPipelineCodec : IPipelineCodec {
     }
 
     companion object {
-        const val PROTOCOL = "http"
-
         const val REQUEST_MESSAGE = "Request"
         const val RESPONSE_MESSAGE = "Response"
         const val METHOD_FIELD = "method"

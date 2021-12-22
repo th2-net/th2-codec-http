@@ -1,5 +1,6 @@
 package com.exactpro.th2.codec.http
 
+import com.exactpro.th2.codec.http.HttpPipelineCodecFactory.Companion.PROTOCOL
 import com.exactpro.th2.common.grpc.AnyMessage
 import com.exactpro.th2.common.grpc.Direction
 import com.exactpro.th2.common.grpc.MessageGroup
@@ -25,7 +26,7 @@ class DecodeTest {
         val codec = HttpPipelineCodec()
         val message = RawMessage.newBuilder().apply {
             parentEventIdBuilder.id = eventID
-            metadataBuilder.protocol = HttpPipelineCodec.PROTOCOL
+            metadataBuilder.protocol = PROTOCOL
             metadataBuilder.idBuilder.direction = Direction.SECOND
             body = ByteString.copyFrom(request.toByteArray())
         }
@@ -51,7 +52,7 @@ class DecodeTest {
         val codec = HttpPipelineCodec()
         val message = RawMessage.newBuilder().apply {
             parentEventIdBuilder.id = eventID
-            metadataBuilder.protocol = HttpPipelineCodec.PROTOCOL
+            metadataBuilder.protocol = PROTOCOL
             metadataBuilder.idBuilder.direction = Direction.FIRST
             body = ByteString.copyFrom(response.toByteArray())
         }

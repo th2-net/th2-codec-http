@@ -1,5 +1,6 @@
 package com.exactpro.th2.codec.http
 
+import com.exactpro.th2.codec.http.HttpPipelineCodecFactory.Companion.PROTOCOL
 import com.exactpro.th2.common.grpc.AnyMessage
 import com.exactpro.th2.common.grpc.Message
 import com.exactpro.th2.common.grpc.MessageGroup
@@ -20,7 +21,7 @@ class EncodeTest {
             addField(HttpPipelineCodec.URI_FIELD, "/test")
             addField(HttpPipelineCodec.METHOD_FIELD, "GET")
             parentEventIdBuilder.id = eventID
-            metadataBuilder.protocol = HttpPipelineCodec.PROTOCOL
+            metadataBuilder.protocol = PROTOCOL
         }
 
         val messageGroup = MessageGroup.newBuilder().addMessages(AnyMessage.newBuilder().setMessage(message).build()).build()
@@ -40,7 +41,7 @@ class EncodeTest {
             addField(HttpPipelineCodec.STATUS_CODE_FIELD, "200")
             addField(HttpPipelineCodec.REASON_FIELD, "OK")
             parentEventIdBuilder.id = eventID
-            metadataBuilder.protocol = HttpPipelineCodec.PROTOCOL
+            metadataBuilder.protocol = PROTOCOL
         }
 
         val messageGroup = MessageGroup.newBuilder().addMessages(AnyMessage.newBuilder().setMessage(message).build()).build()

@@ -59,8 +59,8 @@ jar {
 dependencies {
     api platform('com.exactpro.th2:bom:3.0.0')
 
-    implementation 'com.exactpro.th2:common:3.16.0'
-    implementation 'com.exactpro.th2:codec:3.2.0'
+    implementation 'com.exactpro.th2:common:3.31.4'
+    implementation 'com.exactpro.th2:codec:4.2.0'
 
     implementation "com.exactpro.sf:sailfish-core:${sailfishVersion}"
 
@@ -107,9 +107,7 @@ compileTestKotlin {
 }
 
 serviceLoader {
-    serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodec'
-    serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecSettings'
-    serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecSettingsTypeProvider'
+    serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecFactory'
 }
 
 test {
