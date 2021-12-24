@@ -68,7 +68,7 @@ spec:
   image-version: 0.1.0
   custom-config:
     codecSettings:
-  type: th2-conn
+  type: th2-codec
   pins:
     # encoder
     - name: in_codec_encode
