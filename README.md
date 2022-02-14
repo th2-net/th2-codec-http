@@ -76,44 +76,52 @@ spec:
       attributes:
         - encoder_in
         - subscribe
+        - parsed
     - name: out_codec_encode
       connection-type: mq
       attributes:
         - encoder_out
         - publish
+        - raw
     # decoder
     - name: in_codec_decode
       connection-type: mq
       attributes:
         - decoder_in
         - subscribe
+        - raw
     - name: out_codec_decode
       connection-type: mq
       attributes:
         - decoder_out
         - publish
+        - parsed
     # encoder general (technical)
     - name: in_codec_general_encode
       connection-type: mq
       attributes:
         - general_encoder_in
         - subscribe
+        - parsed
     - name: out_codec_general_encode
       connection-type: mq
       attributes:
         - general_encoder_out
         - publish
+        - raw
     # decoder general (technical)
     - name: in_codec_general_decode
       connection-type: mq
       attributes:
         - general_decoder_in
         - subscribe
+        - raw
     - name: out_codec_general_decode
       connection-type: mq
       attributes:
         - general_decoder_out
         - publish
+        - parsed
   extended-settings:
     service:
       enabled: false
@@ -121,7 +129,7 @@ spec:
 
 ## Release notes
 
-+ 1.1.0
++ 0.1.1
   + The common library update from 3.32.0 to 3.33.0
   + The bom library update from 3.0.0 to 3.1.0
   + The codec library update from 4.2.0 to 4.5.0
