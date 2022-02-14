@@ -1,4 +1,4 @@
-# HTTP Codec v0.1.0
+# HTTP Codec v0.1.1
 
 This microservice can encode and decode HTTP messages
 
@@ -65,7 +65,7 @@ metadata:
   name: codec-http
 spec:
   image-name: ghcr.io/th2-net/th2-codec-http
-  image-version: 0.1.0
+  image-version: 0.1.1
   custom-config:
     codecSettings:
   type: th2-codec
@@ -118,3 +118,10 @@ spec:
     service:
       enabled: false
 ```
+
+## Release notes
+
++ 1.1.0
+  + The common library update from 3.32.0 to 3.33.0
+  + The bom library update from 3.0.0 to 3.1.0
+  + The codec library update from 4.2.0 to 4.5.0
