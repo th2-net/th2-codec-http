@@ -60,8 +60,7 @@ dependencies {
     api platform('com.exactpro.th2:bom:3.1.0')
 
     implementation 'com.exactpro.th2:common:3.33.0'
-    implementation 'com.exactpro.th2:codec:4.6.1-th2-1617-grpc-interface-1849584390-SNAPSHOT'
-
+    implementation 'com.exactpro.th2:codec:4.6.2-th2-1617-grpc-interface-1850418672-SNAPSHOT'
 
     implementation "com.exactpro.sf:sailfish-core:${sailfishVersion}"
 

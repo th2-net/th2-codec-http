@@ -1,4 +1,4 @@
-# HTTP Codec v0.2.1
+# HTTP Codec v0.2.2
 
 This microservice can encode and decode HTTP messages
 
@@ -119,10 +119,6 @@ spec:
       enabled: false
 ```
 ## Changelog
-
-### v0.2.1
-
-* th2-codec version update
 
 ### v0.2.0
 
