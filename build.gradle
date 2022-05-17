@@ -7,7 +7,7 @@ plugins {
 
 ext {
     sharedDir = file("${project.rootDir}/shared")
-    sailfishVersion = '3.2.1776'
+    sailfishVersion = '3.2.1839'
 }
 
 group = 'com.exactpro.th2'
@@ -59,16 +59,14 @@ jar {
 dependencies {
     api platform('com.exactpro.th2:bom:3.1.0')
 
-    implementation 'com.exactpro.th2:common:3.35.0-TH2-3340-2058762205-SNAPSHOT'
-    implementation 'com.exactpro.th2:codec:4.7.0-TH2-3340-2064472686-SNAPSHOT'
+    implementation 'com.exactpro.th2:common:3.37.2'
+    implementation 'com.exactpro.th2:codec:4.8.0-TH2-3340-2338228461-SNAPSHOT'
 
     implementation "com.exactpro.sf:sailfish-core:${sailfishVersion}"
 
     implementation 'org.slf4j:slf4j-log4j12'
     implementation 'org.slf4j:slf4j-api'
 
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
     implementation group: 'io.github.microutils', name: 'kotlin-logging', version: '2.1.21'
     implementation group: 'com.athaydes.rawhttp', name: 'rawhttp-core', version: '2.4.1'
 
