@@ -7,7 +7,7 @@ plugins {
 
 ext {
     sharedDir = file("${project.rootDir}/shared")
-    sailfishVersion = '3.2.1839'
+    sailfishVersion = '3.2.1877'
 }
 
 group = 'com.exactpro.th2'
@@ -59,16 +59,16 @@ jar {
 dependencies {
     api platform('com.exactpro.th2:bom:3.2.0')
 
-    implementation 'com.exactpro.th2:common:3.39.0-TH2-3574-2455825501-SNAPSHOT'
-    implementation 'com.exactpro.th2:codec:4.8.0-TH2-3340-2450163470-SNAPSHOT'
+    implementation 'com.exactpro.th2:common:3.40.0'
+    implementation 'com.exactpro.th2:codec:4.8.0-TH2-3340-2970824137-SNAPSHOT'
 
     implementation "com.exactpro.sf:sailfish-core:${sailfishVersion}"
 
-    implementation group: 'io.github.microutils', name: 'kotlin-logging', version: '2.1.21'
-    implementation group: 'com.athaydes.rawhttp', name: 'rawhttp-core', version: '2.4.1'
+    implementation group: 'io.github.microutils', name: 'kotlin-logging', version: '2.1.23'
+    implementation group: 'com.athaydes.rawhttp', name: 'rawhttp-core', version: '2.5.1'
 
     testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit5', version: kotlin_version
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.0'
 }
 
 application {
