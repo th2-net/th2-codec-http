@@ -22,16 +22,31 @@ version = release_version
 sourceCompatibility = 11
 targetCompatibility = 11
 
+ext.excludeSailfish = { rcd ->
+    rcd.excludeModule("com.exactpro.sf", "sailfish-core")
+    rcd.excludeModule("com.exactpro.sf", "sailfish-common")
+    rcd.excludeModule("com.exactpro.sf", "sailfish-rest-api-client")
+    rcd.excludeModule("com.exactpro.sf", "service-http")
+}
+
 repositories {
     maven {
         name 'MavenLocal'
         url sharedDir
     }
 
+    maven {
+        name 'Sonatype_snapshots'
+        url 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+        content {
+            excludeSailfish(it)
+        }
+    }
+
     // ignoreGradleMetadataRedirection is used for sonatype because
     // Sailfish dependencies have constrains that interfere with our BOM
-    // so we exclude Gradle metadata for this repositories
-
+    // so we exclude Gradle metadata for this repositories.
+    // We've checked these versions - they are compatible and safe to use
     maven {
         name 'Sonatype_snapshots'
         url 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
@@ -41,7 +56,13 @@ repositories {
             ignoreGradleMetadataRedirection()
         }
     }
-
+    maven {
+        name 'Sonatype_releases'
+        url 'https://s01.oss.sonatype.org/content/repositories/releases/'
+        content {
+            excludeSailfish(it)
+        }
+    }
     maven {
         name 'Sonatype_releases'
         url 'https://s01.oss.sonatype.org/content/repositories/releases/'
@@ -51,12 +72,7 @@ repositories {
             ignoreGradleMetadataRedirection()
         }
     }
-    mavenCentral {
-        metadataSources {
-            mavenPom()
-            artifact()
-        }
-    }
+    mavenCentral()
     mavenLocal()
 
     configurations.all {
@@ -85,7 +101,7 @@ dependencies {
     implementation 'com.exactpro.th2:common:3.41.1'
     implementation 'com.exactpro.th2:codec:4.7.4'
 
-    implementation 'com.exactpro.th2:sailfish-utils:3.13.0-dev-3204703314-SNAPSHOT'
+    implementation 'com.exactpro.th2:sailfish-utils:3.13.0'
 
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
