@@ -23,6 +23,7 @@ import com.exactpro.th2.codec.api.IPipelineCodecSettings
 
 class HttpPipelineCodecFactory : IPipelineCodecFactory {
     override val settingsClass: Class<out IPipelineCodecSettings> = HttpPipelineCodecSettings::class.java
+    @Deprecated("Please migrate to the protocols property")
     override val protocol: String = PROTOCOL
     override fun init(pipelineCodecContext: IPipelineCodecContext) = Unit
     override fun create(settings: IPipelineCodecSettings?): IPipelineCodec = HttpPipelineCodec()

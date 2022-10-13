@@ -1,4 +1,4 @@
-# HTTP Codec v0.1.0
+# HTTP Codec v0.2.0
 
 This microservice can encode and decode HTTP messages
 
@@ -65,7 +65,7 @@ metadata:
   name: codec-http
 spec:
   image-name: ghcr.io/th2-net/th2-codec-http
-  image-version: 0.1.0
+  image-version: 0.2.0
   custom-config:
     codecSettings:
   type: th2-codec
@@ -118,3 +118,9 @@ spec:
     service:
       enabled: false
 ```
+
+### Gradle metadata note
+ignoreGradleMetadataRedirection is used for sonatype because Sailfish dependencies have constrains that interfere with BOM,
+so we exclude Gradle metadata for these repositories.
+
+It's been verified that Sailfish itself is compatible with versions from BOM and therefore safe to use.
