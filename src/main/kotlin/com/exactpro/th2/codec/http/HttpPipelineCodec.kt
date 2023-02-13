@@ -120,7 +120,6 @@ class HttpPipelineCodec : IPipelineCodec {
         val metadata = message.metadata
 
         builder += httpMessage.toByteArray().toRawMessage(
-            metadata.timestamp,
             metadata.id,
             metadata.propertiesMap,
             body?.metadata?.propertiesMap,
@@ -216,7 +215,6 @@ class HttpPipelineCodec : IPipelineCodec {
         private inline operator fun <T : Builder> T.invoke(block: T.() -> Unit) = apply(block)
 
         private fun ByteArray.toRawMessage(
-            timestamp: Timestamp,
             messageId: MessageID,
             metadataProperties: Map<String, String>,
             additionalMetadataProperties: Map<String, String>? = null,
@@ -228,7 +226,6 @@ class HttpPipelineCodec : IPipelineCodec {
             this.metadataBuilder {
                 putAllProperties(metadataProperties)
                 additionalMetadataProperties?.run(::putAllProperties)
-                this.timestamp = timestamp
                 this.idBuilder.mergeFrom(messageId).apply {
                     this.addAllSubsequence(subsequence)
                 }
@@ -270,7 +267,6 @@ class HttpPipelineCodec : IPipelineCodec {
                 this.metadataBuilder {
                     putAllProperties(metadataProperties)
                     this.messageType = type
-                    this.timestamp = metadata.timestamp
                     this.protocol = PROTOCOL
                     this.idBuilder.mergeFrom(messageId).apply {
                         this.addAllSubsequence(subsequence)
@@ -283,7 +279,6 @@ class HttpPipelineCodec : IPipelineCodec {
                 .filter(ByteArray::isNotEmpty)
                 .ifPresent {
                     builder += it.toRawMessage(
-                        metadata.timestamp,
                         messageId,
                         metadataProperties,
                         additionalMetadataProperties,
