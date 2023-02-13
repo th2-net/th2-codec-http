@@ -20,7 +20,9 @@ import com.exactpro.th2.codec.api.IPipelineCodec
 import com.exactpro.th2.codec.api.IPipelineCodecContext
 import com.exactpro.th2.codec.api.IPipelineCodecFactory
 import com.exactpro.th2.codec.api.IPipelineCodecSettings
+import com.google.auto.service.AutoService
 
+@AutoService(IPipelineCodecFactory::class)
 class HttpPipelineCodecFactory : IPipelineCodecFactory {
     override val settingsClass: Class<out IPipelineCodecSettings> = HttpPipelineCodecSettings::class.java
     @Deprecated("Please migrate to the protocols property")

@@ -124,3 +124,11 @@ ignoreGradleMetadataRedirection is used for sonatype because Sailfish dependenci
 so we exclude Gradle metadata for these repositories.
 
 It's been verified that Sailfish itself is compatible with versions from BOM and therefore safe to use.
+
+
+# Release notes
+
+## 0.3.0
+* th2-common upgrade to `3.44.0`
+* th2-bom upgrade to `4.1.0`
+* sailfish upgrade to `3.3.51`
