@@ -131,4 +131,5 @@ It's been verified that Sailfish itself is compatible with versions from BOM and
 ## 0.3.0
 * th2-common upgrade to `3.44.0`
 * th2-bom upgrade to `4.1.0`
-* sailfish upgrade to `3.3.51`
+* th2-codec upgrade to `4.7.6`
+* sailfish upgrade to `3.3.54`
