@@ -1,9 +1,9 @@
 plugins {
     id 'com.palantir.docker' version '0.25.0'
-    id 'com.github.harbby.gradle.serviceloader' version '1.1.5'
     id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}"
     id 'application'
     id "org.owasp.dependencycheck" version "7.2.0"
+    id 'org.jetbrains.kotlin.kapt' version "${kotlin_version}"
 }
 
 dependencyCheck {
@@ -13,7 +13,7 @@ dependencyCheck {
 
 ext {
     sharedDir = file("${project.rootDir}/shared")
-    sailfishVersion = '3.3.11'
+    sailfishVersion = '3.3.54'
 }
 
 group = 'com.exactpro.th2'
@@ -96,12 +96,15 @@ jar {
 }
 
 dependencies {
-    api platform('com.exactpro.th2:bom:4.0.2')
+    api platform('com.exactpro.th2:bom:4.1.0')
 
-    implementation 'com.exactpro.th2:common:3.41.1'
-    implementation 'com.exactpro.th2:codec:4.7.4'
+    implementation 'com.exactpro.th2:common:3.44.0'
+    implementation 'com.exactpro.th2:codec:4.7.6'
 
-    implementation 'com.exactpro.th2:sailfish-utils:3.13.0'
+    implementation 'com.exactpro.th2:sailfish-utils:3.14.0'
+        
+    compileOnly 'com.google.auto.service:auto-service:1.0.1'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
 
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
@@ -110,6 +113,8 @@ dependencies {
 
     testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit5', version: kotlin_version
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.0'
+
+    kapt 'com.google.auto.service:auto-service:1.0.1'
 }
 
 application {
@@ -140,10 +145,6 @@ compileTestKotlin {
     kotlinOptions {
         jvmTarget = "11"
     }
-}
-
-serviceLoader {
-    serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecFactory'
 }
 
 test {
