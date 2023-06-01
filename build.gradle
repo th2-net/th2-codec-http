@@ -96,10 +96,10 @@ jar {
 }
 
 dependencies {
-    api platform('com.exactpro.th2:bom:4.1.0')
+    api platform('com.exactpro.th2:bom:4.2.0')
 
-    implementation 'com.exactpro.th2:common:5.1.0-dev-version-5+'
-    implementation 'com.exactpro.th2:codec:5.0.0-dev-version-5+'
+    implementation 'com.exactpro.th2:common:5.3.0-json-raw-body-5144283961-5ae02cd-SNAPSHOT'
+    implementation 'com.exactpro.th2:codec:5.2.0-new-proto-5111859401-e24c7b8-SNAPSHOT'
 
     implementation 'com.exactpro.th2:sailfish-utils:3.14.0'
         
