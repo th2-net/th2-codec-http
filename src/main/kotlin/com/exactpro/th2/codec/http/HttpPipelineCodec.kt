@@ -23,10 +23,7 @@ import com.exactpro.th2.common.grpc.AnyMessage.KindCase.RAW_MESSAGE
 import com.exactpro.th2.common.grpc.Direction.FIRST
 import com.exactpro.th2.common.grpc.Direction.SECOND
 import com.exactpro.th2.common.grpc.EventID
-import com.exactpro.th2.common.grpc.Message as ProtoMessage
-import com.exactpro.th2.common.grpc.MessageGroup as ProtoMessageGroup
 import com.exactpro.th2.common.grpc.MessageID
-import com.exactpro.th2.common.grpc.RawMessage as ProtoRawMessage
 import com.exactpro.th2.common.grpc.Value
 import com.exactpro.th2.common.grpc.Value.KindCase.LIST_VALUE
 import com.exactpro.th2.common.grpc.Value.KindCase.MESSAGE_VALUE
@@ -34,6 +31,7 @@ import com.exactpro.th2.common.grpc.Value.KindCase.SIMPLE_VALUE
 import com.exactpro.th2.common.message.addField
 import com.exactpro.th2.common.message.plusAssign
 import com.exactpro.th2.common.schema.message.impl.rabbitmq.transport.*
+import com.exactpro.th2.common.utils.message.transport.getMap
 import com.exactpro.th2.common.value.toValue
 import com.google.protobuf.ByteString
 import com.google.protobuf.MessageLite.Builder
@@ -53,14 +51,14 @@ import rawhttp.core.body.BytesBody
 import java.io.ByteArrayOutputStream
 import java.net.URI
 import kotlin.text.Charsets.UTF_8
+import com.exactpro.th2.common.grpc.Message as ProtoMessage
+import com.exactpro.th2.common.grpc.MessageGroup as ProtoMessageGroup
+import com.exactpro.th2.common.grpc.RawMessage as ProtoRawMessage
 
 class HttpPipelineCodec : IPipelineCodec {
+
     override fun encode(messageGroup: ProtoMessageGroup): ProtoMessageGroup {
         val messages = messageGroup.messagesList
-
-        if (messages.isEmpty()) {
-            return messageGroup
-        }
 
         require(messages.size <= 2) { "Message group must contain at most 2 messages" }
         require(messages[0].kindCase == MESSAGE) { "First message must be a parsed message" }
@@ -96,10 +94,12 @@ class HttpPipelineCodec : IPipelineCodec {
                     body?.toBody().run(::withBody) ?: this
                 }
             }
+
             RESPONSE_MESSAGE -> messageFields.run {
                 requireKnownFields(RESPONSE_FIELDS)
 
-                val statusCode = getString(STATUS_CODE_FIELD).toIntOrNull() ?: error("$STATUS_CODE_FIELD is not a number")
+                val statusCode =
+                    getString(STATUS_CODE_FIELD).toIntOrNull() ?: error("$STATUS_CODE_FIELD is not a number")
                 val reason = getString(REASON_FIELD)
                 val headers = RawHttpHeaders.newBuilder()
 
@@ -115,6 +115,7 @@ class HttpPipelineCodec : IPipelineCodec {
                     body?.toBody().run(::withBody) ?: this
                 }
             }
+
             else -> error("Unsupported message type: $messageType")
         }
 
@@ -132,10 +133,6 @@ class HttpPipelineCodec : IPipelineCodec {
 
     override fun encode(messageGroup: MessageGroup): MessageGroup {
         val messages = messageGroup.messages
-
-        if (messages.isEmpty()) {
-            return messageGroup
-        }
 
         require(messages.size <= 2) { "Message group must contain at most 2 messages" }
         val message = messages[0] as? ParsedMessage ?: error("First message must be a parsed message")
@@ -156,7 +153,7 @@ class HttpPipelineCodec : IPipelineCodec {
                 val uri = get(URI_FIELD) as String
                 val method = get(METHOD_FIELD) as String
                 val headers = RawHttpHeaders.newBuilder().apply {
-                    (get(HEADERS_FIELD) as? MutableMap<String, String>)?.fillHeaders(this)
+                    (getMap(HEADERS_FIELD) as? Map<String, String>)?.fillHeaders(this)
                 }
 
                 RawHttpRequest(
@@ -168,13 +165,15 @@ class HttpPipelineCodec : IPipelineCodec {
                     body?.toBody().run(::withBody) ?: this
                 }
             }
+
             RESPONSE_MESSAGE -> message.body.run {
                 requireKnownFields(RESPONSE_FIELDS)
 
-                val statusCode = (get(STATUS_CODE_FIELD) as String).toIntOrNull() ?: error("$STATUS_CODE_FIELD is not a number")
+                val statusCode =
+                    (get(STATUS_CODE_FIELD) as String).toIntOrNull() ?: error("$STATUS_CODE_FIELD is not a number")
                 val reason = get(REASON_FIELD) as String
                 val headers = RawHttpHeaders.newBuilder().apply {
-                    (get(HEADERS_FIELD) as? MutableMap<String, String>)?.fillHeaders(this)
+                    (getMap(HEADERS_FIELD) as? Map<String, String>)?.fillHeaders(this)
                 }
 
                 RawHttpResponse(
@@ -187,6 +186,7 @@ class HttpPipelineCodec : IPipelineCodec {
                     body?.toBody().run(::withBody) ?: this
                 }
             }
+
             else -> error("Unsupported message type: $messageType")
         }
 
@@ -204,10 +204,6 @@ class HttpPipelineCodec : IPipelineCodec {
     override fun decode(messageGroup: ProtoMessageGroup): ProtoMessageGroup {
         val messages = messageGroup.messagesList
 
-        if (messages.isEmpty()) {
-            return messageGroup
-        }
-
         require(messages.size == 1) { "Message group must contain only 1 message" }
         require(messages[0].kindCase == RAW_MESSAGE) { "Message must be a raw message" }
 
@@ -220,12 +216,15 @@ class HttpPipelineCodec : IPipelineCodec {
                 httpMessage.addField(STATUS_CODE_FIELD, statusCode)
                 httpMessage.addField(REASON_FIELD, reason)
             }
-            SECOND -> RAW_HTTP.parseRequest(body).convert(REQUEST_MESSAGE, message, builder) { httpMessage, metadataProperties ->
-                httpMessage.addField(METHOD_FIELD, method)
-                httpMessage.addField(URI_FIELD, uri)
-                metadataProperties[METHOD_METADATA_PROPERTY] = method
-                metadataProperties[URI_METADATA_PROPERTY] = uri.toString()
-            }
+
+            SECOND -> RAW_HTTP.parseRequest(body)
+                .convert(REQUEST_MESSAGE, message, builder) { httpMessage, metadataProperties ->
+                    httpMessage.addField(METHOD_FIELD, method)
+                    httpMessage.addField(URI_FIELD, uri)
+                    metadataProperties[METHOD_METADATA_PROPERTY] = method
+                    metadataProperties[URI_METADATA_PROPERTY] = uri.toString()
+                }
+
             else -> error("Unsupported message direction: $direction")
         }
 
@@ -234,10 +233,6 @@ class HttpPipelineCodec : IPipelineCodec {
 
     override fun decode(messageGroup: MessageGroup): MessageGroup {
         val messages = messageGroup.messages
-
-        if (messages.isEmpty()) {
-            return messageGroup
-        }
 
         require(messages.size == 1) { "Message group must contain only 1 message" }
 
@@ -248,16 +243,20 @@ class HttpPipelineCodec : IPipelineCodec {
         val decodedMessages = mutableListOf<Message<*>>()
 
         when (val direction = message.id.direction) {
-            Direction.INCOMING -> RAW_HTTP.parseResponse(body).convert(RESPONSE_MESSAGE, message, decodedMessages) { httpMessage, _ ->
-                httpMessage[STATUS_CODE_FIELD] = statusCode
-                httpMessage[REASON_FIELD] = reason
-            }
-            Direction.OUTGOING -> RAW_HTTP.parseRequest(body).convert(REQUEST_MESSAGE, message, decodedMessages) { httpMessage, metadataProperties ->
-                httpMessage[METHOD_FIELD] = method
-                httpMessage[URI_FIELD] = uri
-                metadataProperties[METHOD_METADATA_PROPERTY] = method
-                metadataProperties[URI_METADATA_PROPERTY] = uri.toString()
-            }
+            Direction.INCOMING -> RAW_HTTP.parseResponse(body)
+                .convert(RESPONSE_MESSAGE, message, decodedMessages) { httpMessage, _ ->
+                    httpMessage[STATUS_CODE_FIELD] = statusCode
+                    httpMessage[REASON_FIELD] = reason
+                }
+
+            Direction.OUTGOING -> RAW_HTTP.parseRequest(body)
+                .convert(REQUEST_MESSAGE, message, decodedMessages) { httpMessage, metadataProperties ->
+                    httpMessage[METHOD_FIELD] = method
+                    httpMessage[URI_FIELD] = uri
+                    metadataProperties[METHOD_METADATA_PROPERTY] = method
+                    metadataProperties[URI_METADATA_PROPERTY] = uri.toString()
+                }
+
             else -> error("Unsupported message direction: $direction")
         }
 
@@ -284,9 +283,10 @@ class HttpPipelineCodec : IPipelineCodec {
 
         private val RAW_HTTP = RawHttp()
 
-        private fun Map<String, *>.requireKnownFields(messageFields: Set<String>) = require(keys.all(messageFields::contains)) {
-            "Message contains unknown fields: ${keys.filterNot(messageFields::contains)}"
-        }
+        private fun Map<String, *>.requireKnownFields(messageFields: Set<String>) =
+            require(keys.all(messageFields::contains)) {
+                "Message contains unknown fields: ${keys.filterNot(messageFields::contains)}"
+            }
 
         private fun Map<String, Value>.getString(fieldName: String) = get(fieldName)?.run {
             require(kindCase == SIMPLE_VALUE) { "$fieldName is not a string" }
