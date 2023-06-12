@@ -1,4 +1,4 @@
-# HTTP Codec v0.2.0
+# HTTP Codec v0.4.0
 
 This microservice can encode and decode HTTP messages
 
@@ -127,6 +127,9 @@ It's been verified that Sailfish itself is compatible with versions from BOM and
 
 
 # Release notes
+
+## 0.3.0
++ TH2 transport protocol support
 
 ## 0.3.0
 * th2-common upgrade to `3.44.0`
