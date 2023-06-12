@@ -128,7 +128,7 @@ It's been verified that Sailfish itself is compatible with versions from BOM and
 
 # Release notes
 
-## 0.3.0
+## 0.4.0
 + TH2 transport protocol support
 
 ## 0.3.0
