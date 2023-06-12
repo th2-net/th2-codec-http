@@ -93,7 +93,7 @@ class EncodeTest {
 
         assertEquals(1, encodedGroup.messages.size)
         assertEquals(PROTOCOL, encodedMessage.protocol)
-        assertEquals(22, encodedMessage.body.array().size)
+        assertEquals(22, encodedMessage.body.readableBytes())
         assertEquals(eventID, encodedEventID?.id)
     }
 
@@ -120,7 +120,7 @@ class EncodeTest {
 
         assertEquals(1, encodedGroup.messages.size)
         assertEquals(PROTOCOL, encodedMessage.protocol)
-        assertEquals(19, encodedMessage.body.array().size)
+        assertEquals(19, encodedMessage.body.readableBytes())
         assertEquals(eventID, encodedEventID?.id)
     }
 }

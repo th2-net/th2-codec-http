@@ -316,7 +316,7 @@ class HttpPipelineCodec : IPipelineCodec {
             forEach { (name, value) -> builder.with(name, value) }
 
         private fun ProtoRawMessage.toBody() = BytesBody(body.toByteArray())
-        private fun RawMessage.toBody() = BytesBody(body.array())
+        private fun RawMessage.toBody() = BytesBody(body.toByteArray())
 
         private fun Writable.toByteArray() = ByteArrayOutputStream().apply(::writeTo).toByteArray()
 
