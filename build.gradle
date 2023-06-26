@@ -7,7 +7,7 @@ plugins {
 }
 
 ext {
-    sailfishVersion = '3.3.54'
+    sailfishVersion = '3.3.93'
 }
 
 group = 'com.exactpro.th2'
@@ -85,23 +85,26 @@ jar {
 }
 
 dependencies {
-    api platform('com.exactpro.th2:bom:4.2.0')
+    api platform('com.exactpro.th2:bom:4.4.0-update-libs-5345334944-c71fdc9-SNAPSHOT')
 
-    implementation 'com.exactpro.th2:common:5.3.0-json-raw-body-5242142633-7ac1672-SNAPSHOT'
-    implementation 'com.exactpro.th2:common-utils:2.1.0-transport-protocol-5153730274-14792e9-SNAPSHOT'
-    implementation 'com.exactpro.th2:codec:5.3.0-new-proto-5241354905-69d03b5-SNAPSHOT'
+    implementation('com.exactpro.th2:common:5.3.0-separate-executor-5347518176-63bc4ea-SNAPSHOT') {
+        exclude group: 'com.exactpro.th2', module: 'cradle-cassandra'
+        exclude group: 'com.exactpro.th2', module: 'cradle-core'
+    }
+    implementation 'com.exactpro.th2:common-utils:2.1.0-transport-protocol-5347774882-e4aa8e6-SNAPSHOT'
+    implementation 'com.exactpro.th2:codec:5.3.0-new-proto-5377025425-07b1e3e-SNAPSHOT'
 
     implementation 'com.exactpro.th2:sailfish-utils:4.0.0-TH2-4891-5111848206-3d59c47-SNAPSHOT'
 
-    compileOnly 'com.google.auto.service:auto-service:1.0.1'
-    annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
+    compileOnly 'com.google.auto.service:auto-service:1.1.1'
+    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
+    kapt 'com.google.auto.service:auto-service:1.1.1'
 
     implementation group: 'io.github.microutils', name: 'kotlin-logging', version: '3.0.0'
     implementation group: 'com.athaydes.rawhttp', name: 'rawhttp-core', version: '2.4.1'
 
     testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit5', version: kotlin_version
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
-    kapt 'com.google.auto.service:auto-service:1.0.1'
 }
 
 application {
