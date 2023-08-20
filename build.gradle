@@ -7,7 +7,7 @@ plugins {
 }
 
 ext {
-    sailfishVersion = '3.3.93'
+    sailfishVersion = '3.3.111'
 }
 
 group = 'com.exactpro.th2'
@@ -85,23 +85,23 @@ jar {
 }
 
 dependencies {
-    api platform("com.exactpro.th2:bom:4.4.0")
+    api platform("com.exactpro.th2:bom:4.5.0")
 
-    implementation "com.exactpro.th2:common:5.3.0-separate-executor-5712647407-cd52dd9-SNAPSHOT"
-    implementation "com.exactpro.th2:common-utils:2.1.0-transport-protocol-5599170164-aa085e1-SNAPSHOT"
-    implementation "com.exactpro.th2:codec:5.3.0-new-proto-5736204737-92216cf-SNAPSHOT"
+    implementation "com.exactpro.th2:common:5.4.0-dev"
+    implementation "com.exactpro.th2:common-utils:2.2.0-dev"
+    implementation "com.exactpro.th2:codec:5.3.0-new-proto-+"
 
-    implementation "com.exactpro.th2:sailfish-utils:4.0.0-TH2-4891-5551590515-3b92506-SNAPSHOT"
+    implementation "com.exactpro.th2:sailfish-utils:4.1.0-dev"
 
     compileOnly "com.google.auto.service:auto-service:1.1.1"
     annotationProcessor "com.google.auto.service:auto-service:1.1.1"
     kapt "com.google.auto.service:auto-service:1.1.1"
 
-    implementation "io.github.microutils:kotlin-logging:3.0.0" // The last version bases on kotlin 1.6.0
+    implementation "io.github.microutils:kotlin-logging:3.0.5"
     implementation "com.athaydes.rawhttp:rawhttp-core:2.4.1"
 
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit5:$kotlin_version"
-    testImplementation "org.junit.jupiter:junit-jupiter:5.9.3"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit5"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
 }
 
 application {
