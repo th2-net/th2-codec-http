@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2023 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,20 +23,19 @@ import com.exactpro.th2.common.grpc.AnyMessage.KindCase.RAW_MESSAGE
 import com.exactpro.th2.common.grpc.Direction.FIRST
 import com.exactpro.th2.common.grpc.Direction.SECOND
 import com.exactpro.th2.common.grpc.EventID
-import com.exactpro.th2.common.grpc.Message
-import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.MessageID
-import com.exactpro.th2.common.grpc.RawMessage
 import com.exactpro.th2.common.grpc.Value
 import com.exactpro.th2.common.grpc.Value.KindCase.LIST_VALUE
 import com.exactpro.th2.common.grpc.Value.KindCase.MESSAGE_VALUE
 import com.exactpro.th2.common.grpc.Value.KindCase.SIMPLE_VALUE
 import com.exactpro.th2.common.message.addField
 import com.exactpro.th2.common.message.plusAssign
+import com.exactpro.th2.common.schema.message.impl.rabbitmq.transport.*
+import com.exactpro.th2.common.utils.message.transport.getMap
 import com.exactpro.th2.common.value.toValue
 import com.google.protobuf.ByteString
 import com.google.protobuf.MessageLite.Builder
-import com.google.protobuf.Timestamp
+import io.netty.buffer.Unpooled
 import rawhttp.core.HttpMessage
 import rawhttp.core.HttpVersion.HTTP_1_1
 import rawhttp.core.RawHttp
@@ -52,14 +51,14 @@ import rawhttp.core.body.BytesBody
 import java.io.ByteArrayOutputStream
 import java.net.URI
 import kotlin.text.Charsets.UTF_8
+import com.exactpro.th2.common.grpc.Message as ProtoMessage
+import com.exactpro.th2.common.grpc.MessageGroup as ProtoMessageGroup
+import com.exactpro.th2.common.grpc.RawMessage as ProtoRawMessage
 
 class HttpPipelineCodec : IPipelineCodec {
-    override fun encode(messageGroup: MessageGroup): MessageGroup {
-        val messages = messageGroup.messagesList
 
-        if (messages.isEmpty()) {
-            return messageGroup
-        }
+    override fun encode(messageGroup: ProtoMessageGroup): ProtoMessageGroup {
+        val messages = messageGroup.messagesList
 
         require(messages.size <= 2) { "Message group must contain at most 2 messages" }
         require(messages[0].kindCase == MESSAGE) { "First message must be a parsed message" }
@@ -68,13 +67,13 @@ class HttpPipelineCodec : IPipelineCodec {
 
         require(message.metadata.protocol == PROTOCOL) { "Unsupported protocol: ${message.metadata.protocol}" }
 
-        val body: RawMessage? = messages.getOrNull(1)?.run {
+        val body: ProtoRawMessage? = messages.getOrNull(1)?.run {
             require(kindCase == RAW_MESSAGE) { "Second message must be a raw message" }
             rawMessage
         }
 
         val messageFields = message.fieldsMap
-        val builder = MessageGroup.newBuilder()
+        val builder = ProtoMessageGroup.newBuilder()
 
         val httpMessage: HttpMessage = when (val messageType = message.metadata.messageType) {
             REQUEST_MESSAGE -> messageFields.run {
@@ -95,10 +94,12 @@ class HttpPipelineCodec : IPipelineCodec {
                     body?.toBody().run(::withBody) ?: this
                 }
             }
+
             RESPONSE_MESSAGE -> messageFields.run {
                 requireKnownFields(RESPONSE_FIELDS)
 
-                val statusCode = getString(STATUS_CODE_FIELD).toIntOrNull() ?: error("$STATUS_CODE_FIELD is not a number")
+                val statusCode =
+                    getString(STATUS_CODE_FIELD).toIntOrNull() ?: error("$STATUS_CODE_FIELD is not a number")
                 val reason = getString(REASON_FIELD)
                 val headers = RawHttpHeaders.newBuilder()
 
@@ -114,12 +115,13 @@ class HttpPipelineCodec : IPipelineCodec {
                     body?.toBody().run(::withBody) ?: this
                 }
             }
+
             else -> error("Unsupported message type: $messageType")
         }
 
         val metadata = message.metadata
 
-        builder += httpMessage.toByteArray().toRawMessage(
+        builder += httpMessage.toByteArray().toProtoRawMessage(
             metadata.id,
             metadata.propertiesMap,
             body?.metadata?.propertiesMap,
@@ -129,35 +131,136 @@ class HttpPipelineCodec : IPipelineCodec {
         return builder.build()
     }
 
-    override fun decode(messageGroup: MessageGroup): MessageGroup {
-        val messages = messageGroup.messagesList
+    override fun encode(messageGroup: MessageGroup): MessageGroup {
+        val messages = messageGroup.messages
 
-        if (messages.isEmpty()) {
-            return messageGroup
+        require(messages.size <= 2) { "Message group must contain at most 2 messages" }
+        val message = messages[0] as? ParsedMessage ?: error("First message must be a parsed message")
+
+        require(message.protocol == PROTOCOL) { "Unsupported protocol: ${message.protocol}" }
+
+        val body: RawMessage? = messages.getOrNull(1)?.run {
+            require(this is RawMessage) { "Second message must be a raw message" }
+            this
         }
+
+        val encodedMessages = mutableListOf<Message<*>>()
+
+        val httpMessage: HttpMessage = when (val messageType = message.type) {
+            REQUEST_MESSAGE -> message.body.run {
+                requireKnownFields(REQUEST_FIELDS)
+
+                val uri = get(URI_FIELD) as String
+                val method = get(METHOD_FIELD) as String
+                val headers = RawHttpHeaders.newBuilder().apply {
+                    (getMap(HEADERS_FIELD) as? Map<String, String>)?.fillHeaders(this)
+                }
+
+                RawHttpRequest(
+                    RequestLine(method, URI(uri), HTTP_1_1),
+                    headers.build(),
+                    null,
+                    null
+                ).run {
+                    body?.toBody().run(::withBody) ?: this
+                }
+            }
+
+            RESPONSE_MESSAGE -> message.body.run {
+                requireKnownFields(RESPONSE_FIELDS)
+
+                val statusCode =
+                    (get(STATUS_CODE_FIELD) as String).toIntOrNull() ?: error("$STATUS_CODE_FIELD is not a number")
+                val reason = get(REASON_FIELD) as String
+                val headers = RawHttpHeaders.newBuilder().apply {
+                    (getMap(HEADERS_FIELD) as? Map<String, String>)?.fillHeaders(this)
+                }
+
+                RawHttpResponse(
+                    null,
+                    null,
+                    StatusLine(HTTP_1_1, statusCode, reason),
+                    headers.build(),
+                    null
+                ).run {
+                    body?.toBody().run(::withBody) ?: this
+                }
+            }
+
+            else -> error("Unsupported message type: $messageType")
+        }
+
+        encodedMessages += RawMessage(
+            message.id,
+            message.eventId,
+            message.metadata,
+            message.protocol,
+            Unpooled.wrappedBuffer(httpMessage.toByteArray())
+        )
+
+        return MessageGroup(encodedMessages)
+    }
+
+    override fun decode(messageGroup: ProtoMessageGroup): ProtoMessageGroup {
+        val messages = messageGroup.messagesList
 
         require(messages.size == 1) { "Message group must contain only 1 message" }
         require(messages[0].kindCase == RAW_MESSAGE) { "Message must be a raw message" }
 
         val message = messages[0].rawMessage
         val body = message.body.toByteArray().toString(UTF_8)
-        val builder = MessageGroup.newBuilder()
+        val builder = ProtoMessageGroup.newBuilder()
 
         when (val direction = message.metadata.id.direction) {
             FIRST -> RAW_HTTP.parseResponse(body).convert(RESPONSE_MESSAGE, message, builder) { httpMessage, _ ->
                 httpMessage.addField(STATUS_CODE_FIELD, statusCode)
                 httpMessage.addField(REASON_FIELD, reason)
             }
-            SECOND -> RAW_HTTP.parseRequest(body).convert(REQUEST_MESSAGE, message, builder) { httpMessage, metadataProperties ->
-                httpMessage.addField(METHOD_FIELD, method)
-                httpMessage.addField(URI_FIELD, uri)
-                metadataProperties[METHOD_METADATA_PROPERTY] = method
-                metadataProperties[URI_METADATA_PROPERTY] = uri.toString()
-            }
+
+            SECOND -> RAW_HTTP.parseRequest(body)
+                .convert(REQUEST_MESSAGE, message, builder) { httpMessage, metadataProperties ->
+                    httpMessage.addField(METHOD_FIELD, method)
+                    httpMessage.addField(URI_FIELD, uri)
+                    metadataProperties[METHOD_METADATA_PROPERTY] = method
+                    metadataProperties[URI_METADATA_PROPERTY] = uri.toString()
+                }
+
             else -> error("Unsupported message direction: $direction")
         }
 
         return builder.build()
+    }
+
+    override fun decode(messageGroup: MessageGroup): MessageGroup {
+        val messages = messageGroup.messages
+
+        require(messages.size == 1) { "Message group must contain only 1 message" }
+
+        val message = messages[0]
+        require(message is RawMessage) { "Message must be a raw message" }
+
+        val body = message.body.toByteArray().toString(UTF_8)
+        val decodedMessages = mutableListOf<Message<*>>()
+
+        when (val direction = message.id.direction) {
+            Direction.INCOMING -> RAW_HTTP.parseResponse(body)
+                .convert(RESPONSE_MESSAGE, message, decodedMessages) { httpMessage, _ ->
+                    httpMessage[STATUS_CODE_FIELD] = statusCode
+                    httpMessage[REASON_FIELD] = reason
+                }
+
+            Direction.OUTGOING -> RAW_HTTP.parseRequest(body)
+                .convert(REQUEST_MESSAGE, message, decodedMessages) { httpMessage, metadataProperties ->
+                    httpMessage[METHOD_FIELD] = method
+                    httpMessage[URI_FIELD] = uri
+                    metadataProperties[METHOD_METADATA_PROPERTY] = method
+                    metadataProperties[URI_METADATA_PROPERTY] = uri.toString()
+                }
+
+            else -> error("Unsupported message direction: $direction")
+        }
+
+        return MessageGroup(decodedMessages)
     }
 
     companion object {
@@ -180,9 +283,10 @@ class HttpPipelineCodec : IPipelineCodec {
 
         private val RAW_HTTP = RawHttp()
 
-        private fun Map<String, *>.requireKnownFields(messageFields: Set<String>) = require(keys.all(messageFields::contains)) {
-            "Message contains unknown fields: ${keys.filterNot(messageFields::contains)}"
-        }
+        private fun Map<String, *>.requireKnownFields(messageFields: Set<String>) =
+            require(keys.all(messageFields::contains)) {
+                "Message contains unknown fields: ${keys.filterNot(messageFields::contains)}"
+            }
 
         private fun Map<String, Value>.getString(fieldName: String) = get(fieldName)?.run {
             require(kindCase == SIMPLE_VALUE) { "$fieldName is not a string" }
@@ -208,20 +312,24 @@ class HttpPipelineCodec : IPipelineCodec {
             }
         }
 
+        private fun Map<String, String>.fillHeaders(builder: RawHttpHeaders.Builder) =
+            forEach { (name, value) -> builder.with(name, value) }
+
+        private fun ProtoRawMessage.toBody() = BytesBody(body.toByteArray())
         private fun RawMessage.toBody() = BytesBody(body.toByteArray())
 
         private fun Writable.toByteArray() = ByteArrayOutputStream().apply(::writeTo).toByteArray()
 
         private inline operator fun <T : Builder> T.invoke(block: T.() -> Unit) = apply(block)
 
-        private fun ByteArray.toRawMessage(
+        private fun ByteArray.toProtoRawMessage(
             messageId: MessageID,
             metadataProperties: Map<String, String>,
             additionalMetadataProperties: Map<String, String>? = null,
             subsequence: Iterable<Int> = messageId.subsequenceList.dropLast(1),
             eventID: EventID
-        ): RawMessage = RawMessage.newBuilder().apply {
-            this.body = ByteString.copyFrom(this@toRawMessage)
+        ): ProtoRawMessage = ProtoRawMessage.newBuilder().apply {
+            this.body = ByteString.copyFrom(this@toProtoRawMessage)
             parentEventIdBuilder.mergeFrom(eventID)
             this.metadataBuilder {
                 putAllProperties(metadataProperties)
@@ -234,10 +342,10 @@ class HttpPipelineCodec : IPipelineCodec {
 
         private fun <T : StartLine> HttpMessage.convert(
             type: String,
-            source: RawMessage,
-            builder: MessageGroup.Builder,
+            source: ProtoRawMessage,
+            builder: ProtoMessageGroup.Builder,
             handleStartLine: T.(
-                httpMessage: Message.Builder,
+                httpMessage: ProtoMessage.Builder,
                 metadataProperties: MutableMap<String, String>
             ) -> Unit
         ) {
@@ -247,7 +355,7 @@ class HttpPipelineCodec : IPipelineCodec {
             val messageId = metadata.id
             val subsequence = messageId.subsequenceList
 
-            builder += Message.newBuilder().apply {
+            builder += ProtoMessage.newBuilder().apply {
                 handleStartLine(startLine as T, this, additionalMetadataProperties)
                 parentEventIdBuilder.mergeFrom(source.parentEventId)
 
@@ -255,7 +363,7 @@ class HttpPipelineCodec : IPipelineCodec {
                     val headerList = arrayListOf<Value>()
 
                     headers.forEach { name, value ->
-                        val headerMessage = Message.newBuilder()
+                        val headerMessage = ProtoMessage.newBuilder()
                         headerMessage.addField(HEADER_NAME_FIELD, name)
                         headerMessage.addField(HEADER_VALUE_FIELD, value)
                         headerList += headerMessage.toValue()
@@ -278,7 +386,7 @@ class HttpPipelineCodec : IPipelineCodec {
             body.map(BodyReader::decodeBody)
                 .filter(ByteArray::isNotEmpty)
                 .ifPresent {
-                    builder += it.toRawMessage(
+                    builder += it.toProtoRawMessage(
                         messageId,
                         metadataProperties,
                         additionalMetadataProperties,
@@ -288,12 +396,74 @@ class HttpPipelineCodec : IPipelineCodec {
                 }
         }
 
+        private fun <T : StartLine> HttpMessage.convert(
+            type: String,
+            source: RawMessage,
+            resultMessages: MutableList<Message<*>>,
+            handleStartLine: T.(
+                httpMessageBody: MutableMap<String, Any>,
+                metadataProperties: MutableMap<String, String>
+            ) -> Unit
+        ) {
+            val additionalMetadataProperties = mutableMapOf<String, String>()
+            val messageId = source.id.toBuilder().addSubsequence(1).build()
+            val parsedBody = mutableMapOf<String, Any>()
+
+            handleStartLine(startLine as T, parsedBody, additionalMetadataProperties)
+
+            if (!headers.isEmpty) {
+                parsedBody[HEADERS_FIELD] = mutableMapOf<String, String>().apply {
+                    headers.forEach { name, value -> this[name] = value }
+                }
+            }
+
+            resultMessages += ParsedMessage(
+                messageId.toBuilder().addSubsequence(1).build(),
+                source.eventId,
+                type,
+                source.metadata,
+                PROTOCOL,
+                parsedBody
+            )
+
+            body.map(BodyReader::decodeBody)
+                .filter(ByteArray::isNotEmpty)
+                .ifPresent {
+                    resultMessages += RawMessage(
+                        messageId.toBuilder().addSubsequence(2).build(),
+                        source.eventId,
+                        source.metadata,
+                        body = Unpooled.wrappedBuffer(it)
+                    )
+                }
+        }
+
+        private fun RawHttpRequest.convert(
+            type: String,
+            source: ProtoRawMessage,
+            builder: ProtoMessageGroup.Builder,
+            handleStartLine: RequestLine.(
+                httpMessage: ProtoMessage.Builder,
+                metadataProperties: MutableMap<String, String>
+            ) -> Unit
+        ) = convert<RequestLine>(type, source, builder, handleStartLine)
+
+        private fun RawHttpResponse<*>.convert(
+            type: String,
+            source: ProtoRawMessage,
+            builder: ProtoMessageGroup.Builder,
+            handleStartLine: StatusLine.(
+                httpMessage: ProtoMessage.Builder,
+                metadataProperties: MutableMap<String, String>
+            ) -> Unit
+        ) = convert<StatusLine>(type, source, builder, handleStartLine)
+
         private fun RawHttpRequest.convert(
             type: String,
             source: RawMessage,
-            builder: MessageGroup.Builder,
+            builder: MutableList<Message<*>>,
             handleStartLine: RequestLine.(
-                httpMessage: Message.Builder,
+                httpMessage: MutableMap<String, Any>,
                 metadataProperties: MutableMap<String, String>
             ) -> Unit
         ) = convert<RequestLine>(type, source, builder, handleStartLine)
@@ -301,9 +471,9 @@ class HttpPipelineCodec : IPipelineCodec {
         private fun RawHttpResponse<*>.convert(
             type: String,
             source: RawMessage,
-            builder: MessageGroup.Builder,
+            builder: MutableList<Message<*>>,
             handleStartLine: StatusLine.(
-                httpMessage: Message.Builder,
+                httpMessage: MutableMap<String, Any>,
                 metadataProperties: MutableMap<String, String>
             ) -> Unit
         ) = convert<StatusLine>(type, source, builder, handleStartLine)

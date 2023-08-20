@@ -2,18 +2,12 @@ plugins {
     id 'com.palantir.docker' version '0.25.0'
     id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}"
     id 'application'
-    id "org.owasp.dependencycheck" version "7.2.0"
     id 'org.jetbrains.kotlin.kapt' version "${kotlin_version}"
-}
-
-dependencyCheck {
-    format='HTML'
-    failBuildOnCVSS=5
+    id "org.owasp.dependencycheck" version "8.2.1"
 }
 
 ext {
-    sharedDir = file("${project.rootDir}/shared")
-    sailfishVersion = '3.3.54'
+    sailfishVersion = '3.3.111'
 }
 
 group = 'com.exactpro.th2'
@@ -30,11 +24,6 @@ ext.excludeSailfish = { rcd ->
 }
 
 repositories {
-    maven {
-        name 'MavenLocal'
-        url sharedDir
-    }
-
     maven {
         name 'Sonatype_snapshots'
         url 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
@@ -75,7 +64,7 @@ repositories {
     mavenCentral()
     mavenLocal()
 
-    configurations.all {
+    configurations.configureEach {
         resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
         resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds'
     }
@@ -96,24 +85,23 @@ jar {
 }
 
 dependencies {
-    api platform('com.exactpro.th2:bom:4.1.0')
+    api platform("com.exactpro.th2:bom:4.5.0")
 
-    implementation 'com.exactpro.th2:common:5.1.0-dev-version-5+'
-    implementation 'com.exactpro.th2:codec:5.0.0-dev-version-5+'
+    implementation "com.exactpro.th2:common:5.4.0-dev"
+    implementation "com.exactpro.th2:common-utils:2.2.0-dev"
+    implementation "com.exactpro.th2:codec:5.3.0-new-proto-+"
 
-    implementation 'com.exactpro.th2:sailfish-utils:3.14.0'
-        
-    compileOnly 'com.google.auto.service:auto-service:1.0.1'
-    annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
+    implementation "com.exactpro.th2:sailfish-utils:4.1.0-dev"
 
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
-    implementation group: 'io.github.microutils', name: 'kotlin-logging', version: '1.7.9'
-    implementation group: 'com.athaydes.rawhttp', name: 'rawhttp-core', version: '2.4.1'
+    compileOnly "com.google.auto.service:auto-service:1.1.1"
+    annotationProcessor "com.google.auto.service:auto-service:1.1.1"
+    kapt "com.google.auto.service:auto-service:1.1.1"
 
-    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit5', version: kotlin_version
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.0'
-    kapt 'com.google.auto.service:auto-service:1.0.1'
+    implementation "io.github.microutils:kotlin-logging:3.0.5"
+    implementation "com.athaydes.rawhttp:rawhttp-core:2.4.1"
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit5"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
 }
 
 application {
@@ -148,4 +136,21 @@ compileTestKotlin {
 
 test {
     useJUnitPlatform()
+}
+
+configurations {
+    compileClasspath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
+
+dependencyCheck {
+    formats = ['SARIF', 'JSON', 'HTML']
+    failBuildOnCVSS = 5
+    suppressionFile = file('suppressions.xml')
+    analyzers {
+        assemblyEnabled = false
+        nugetconfEnabled = false
+        nodeEnabled = false
+    }
 }
