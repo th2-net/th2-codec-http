@@ -16,6 +16,7 @@
 
 package com.exactpro.th2.codec.http
 
+import com.exactpro.th2.codec.api.impl.ReportingContext
 import com.exactpro.th2.codec.http.HttpPipelineCodecFactory.Companion.PROTOCOL
 import com.exactpro.th2.common.schema.message.impl.rabbitmq.transport.RawMessage
 import com.exactpro.th2.common.schema.message.impl.rabbitmq.transport.ParsedMessage
@@ -58,7 +59,7 @@ class DecodeTest {
 
         val messageGroup = ProtoMessageGroup.newBuilder().addMessages(ProtoAnyMessage.newBuilder().setRawMessage(message).build()).build()
 
-        val decodedEventID = codec.decode(messageGroup).getMessages(0).message.parentEventId
+        val decodedEventID = codec.decode(messageGroup, ReportingContext()).getMessages(0).message.parentEventId
 
         assertEquals(eventID, decodedEventID.id)
     }
@@ -84,7 +85,7 @@ class DecodeTest {
 
         val messageGroup = ProtoMessageGroup.newBuilder().addMessages(ProtoAnyMessage.newBuilder().setRawMessage(message).build()).build()
 
-        val decodedEventID = codec.decode(messageGroup).getMessages(0).message.parentEventId
+        val decodedEventID = codec.decode(messageGroup, ReportingContext()).getMessages(0).message.parentEventId
 
         assertEquals(eventID, decodedEventID.id)
     }
@@ -110,7 +111,7 @@ class DecodeTest {
 
         val messageGroup = MessageGroup(listOf(message))
 
-        val decodedGroup = codec.decode(messageGroup)
+        val decodedGroup = codec.decode(messageGroup, ReportingContext())
 
         val decodedMessage = decodedGroup.messages[0] as ParsedMessage
 
@@ -151,7 +152,7 @@ class DecodeTest {
 
         val messageGroup = MessageGroup(listOf(message))
 
-        val decodedGroup = codec.decode(messageGroup)
+        val decodedGroup = codec.decode(messageGroup, ReportingContext())
 
         assertEquals(1, decodedGroup.messages.size)
 

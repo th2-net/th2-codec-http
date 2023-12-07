@@ -1,4 +1,4 @@
-# HTTP Codec v0.4.0
+# HTTP Codec v0.5.0
 
 This microservice can encode and decode HTTP messages
 
@@ -128,6 +128,13 @@ BOM, so we exclude Gradle metadata for these repositories.
 It's been verified that Sailfish itself is compatible with versions from BOM and therefore safe to use.
 
 # Release notes
+
+## 0.5.0
+
++ Updated common: `5.7.2-dev`
++ Updated common-utils: `2.2.2-dev`
++ Updated codec: `5.4.1-dev`
++ Updated sailfish-utils: `4.1.1-dev`
 
 ## 0.4.0
 

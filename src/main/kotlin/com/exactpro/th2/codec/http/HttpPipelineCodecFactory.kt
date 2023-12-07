@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2023 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@ import com.google.auto.service.AutoService
 @AutoService(IPipelineCodecFactory::class)
 class HttpPipelineCodecFactory : IPipelineCodecFactory {
     override val settingsClass: Class<out IPipelineCodecSettings> = HttpPipelineCodecSettings::class.java
-    @Deprecated("Please migrate to the protocols property")
-    override val protocol: String = PROTOCOL
+    override val protocols: Set<String> get() = PROTOCOLS
     override fun init(pipelineCodecContext: IPipelineCodecContext) = Unit
     override fun create(settings: IPipelineCodecSettings?): IPipelineCodec = HttpPipelineCodec()
 
     companion object {
         const val PROTOCOL = "http"
+        private val PROTOCOLS = setOf(PROTOCOL)
     }
 }

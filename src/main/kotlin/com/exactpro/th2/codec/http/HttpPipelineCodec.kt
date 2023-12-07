@@ -17,6 +17,7 @@
 package com.exactpro.th2.codec.http
 
 import com.exactpro.th2.codec.api.IPipelineCodec
+import com.exactpro.th2.codec.api.IReportingContext
 import com.exactpro.th2.codec.http.HttpPipelineCodecFactory.Companion.PROTOCOL
 import com.exactpro.th2.common.grpc.AnyMessage.KindCase.MESSAGE
 import com.exactpro.th2.common.grpc.AnyMessage.KindCase.RAW_MESSAGE
@@ -57,7 +58,7 @@ import com.exactpro.th2.common.grpc.RawMessage as ProtoRawMessage
 
 class HttpPipelineCodec : IPipelineCodec {
 
-    override fun encode(messageGroup: ProtoMessageGroup): ProtoMessageGroup {
+    override fun encode(messageGroup: ProtoMessageGroup, context: IReportingContext): ProtoMessageGroup {
         val messages = messageGroup.messagesList
 
         require(messages.size <= 2) { "Message group must contain at most 2 messages" }
@@ -131,7 +132,7 @@ class HttpPipelineCodec : IPipelineCodec {
         return builder.build()
     }
 
-    override fun encode(messageGroup: MessageGroup): MessageGroup {
+    override fun encode(messageGroup: MessageGroup, context: IReportingContext): MessageGroup {
         val messages = messageGroup.messages
 
         require(messages.size <= 2) { "Message group must contain at most 2 messages" }
@@ -201,7 +202,7 @@ class HttpPipelineCodec : IPipelineCodec {
         return MessageGroup(encodedMessages)
     }
 
-    override fun decode(messageGroup: ProtoMessageGroup): ProtoMessageGroup {
+    override fun decode(messageGroup: ProtoMessageGroup, context: IReportingContext): ProtoMessageGroup {
         val messages = messageGroup.messagesList
 
         require(messages.size == 1) { "Message group must contain only 1 message" }
@@ -231,7 +232,7 @@ class HttpPipelineCodec : IPipelineCodec {
         return builder.build()
     }
 
-    override fun decode(messageGroup: MessageGroup): MessageGroup {
+    override fun decode(messageGroup: MessageGroup, context: IReportingContext): MessageGroup {
         val messages = messageGroup.messages
 
         require(messages.size == 1) { "Message group must contain only 1 message" }

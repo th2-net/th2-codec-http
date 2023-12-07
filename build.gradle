@@ -87,11 +87,11 @@ jar {
 dependencies {
     api platform("com.exactpro.th2:bom:4.5.0")
 
-    implementation "com.exactpro.th2:common:5.4.0-dev"
-    implementation "com.exactpro.th2:common-utils:2.2.0-dev"
-    implementation "com.exactpro.th2:codec:5.3.0-new-proto-+"
+    implementation "com.exactpro.th2:common:5.7.2-TH2-5143-+"
+    implementation "com.exactpro.th2:common-utils:2.2.2-dev"
+    implementation "com.exactpro.th2:codec:5.4.1-TH2-5143-+"
 
-    implementation "com.exactpro.th2:sailfish-utils:4.1.0-dev"
+    implementation "com.exactpro.th2:sailfish-utils:4.1.1-dev"
 
     compileOnly "com.google.auto.service:auto-service:1.1.1"
     annotationProcessor "com.google.auto.service:auto-service:1.1.1"

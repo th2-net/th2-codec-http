@@ -16,6 +16,7 @@
 
 package com.exactpro.th2.codec.http
 
+import com.exactpro.th2.codec.api.impl.ReportingContext
 import com.exactpro.th2.codec.http.HttpPipelineCodecFactory.Companion.PROTOCOL
 import com.exactpro.th2.common.grpc.AnyMessage as ProtoAnyMessage
 import com.exactpro.th2.common.grpc.Message as ProtoMessage
@@ -47,7 +48,7 @@ class EncodeTest {
 
         val messageGroup = ProtoMessageGroup.newBuilder().addMessages(ProtoAnyMessage.newBuilder().setMessage(message).build()).build()
 
-        val encodedEventID = codec.encode(messageGroup).getMessages(0).rawMessage.parentEventId
+        val encodedEventID = codec.encode(messageGroup, ReportingContext()).getMessages(0).rawMessage.parentEventId
 
         assertEquals(eventID, encodedEventID.id)
     }
@@ -66,7 +67,7 @@ class EncodeTest {
         }
 
         val messageGroup = ProtoMessageGroup.newBuilder().addMessages(ProtoAnyMessage.newBuilder().setMessage(message).build()).build()
-        val encodedEventID = codec.encode(messageGroup).getMessages(0).rawMessage.parentEventId
+        val encodedEventID = codec.encode(messageGroup, ReportingContext()).getMessages(0).rawMessage.parentEventId
 
         assertEquals(eventID, encodedEventID.id)
     }
@@ -87,7 +88,7 @@ class EncodeTest {
         )
 
         val messageGroup = MessageGroup(listOf(message))
-        val encodedGroup = codec.encode(messageGroup)
+        val encodedGroup = codec.encode(messageGroup, ReportingContext())
         val encodedMessage = encodedGroup.messages[0] as RawMessage
         val encodedEventID = encodedMessage.eventId
 
@@ -113,7 +114,7 @@ class EncodeTest {
         )
 
         val messageGroup = MessageGroup(listOf(message))
-        val encodedGroup = codec.encode(messageGroup)
+        val encodedGroup = codec.encode(messageGroup, ReportingContext())
 
         val encodedMessage = encodedGroup.messages[0] as RawMessage
         val encodedEventID = encodedMessage.eventId
