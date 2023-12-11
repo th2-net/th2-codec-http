@@ -240,7 +240,7 @@ class HttpPipelineCodec : IPipelineCodec {
         val message = messages[0]
         require(message is RawMessage) { "Message must be a raw message" }
 
-        val body = message.body.toByteArray().toString(UTF_8)
+        val body = message.body.toString(UTF_8)
         val decodedMessages = mutableListOf<Message<*>>()
 
         when (val direction = message.id.direction) {

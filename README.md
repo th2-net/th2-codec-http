@@ -120,13 +120,6 @@ spec:
       enabled: false
 ```
 
-### Gradle metadata note
-
-ignoreGradleMetadataRedirection is used for sonatype because Sailfish dependencies have constrains that interfere with
-BOM, so we exclude Gradle metadata for these repositories.
-
-It's been verified that Sailfish itself is compatible with versions from BOM and therefore safe to use.
-
 # Release notes
 
 ## 0.5.0
@@ -134,7 +127,7 @@ It's been verified that Sailfish itself is compatible with versions from BOM and
 + Updated common: `5.7.2-dev`
 + Updated common-utils: `2.2.2-dev`
 + Updated codec: `5.4.1-dev`
-+ Updated sailfish-utils: `4.1.1-dev`
++ Removed sailfish-utils
 
 ## 0.4.0
 
