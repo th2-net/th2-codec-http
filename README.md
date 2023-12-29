@@ -1,4 +1,4 @@
-# HTTP Codec v0.5.0
+# HTTP Codec v0.4.0
 
 This microservice can encode and decode HTTP messages
 
@@ -122,19 +122,15 @@ spec:
 
 # Release notes
 
-## 0.5.0
-
-+ Updated common: `5.7.2-dev`
-+ Updated common-utils: `2.2.2-dev`
-+ Updated codec: `5.4.1-dev`
-+ Removed sailfish-utils
-
 ## 0.4.0
 
 + th2 transport protocol support
-+ Updated bom:4.4.0
-+ Updated common:5.3.0
-+ Updated codec:5.3.0
++ Updated bom: `4.5.0-dev`
++ Updated common: `5.7.2-dev`
++ Updated common-utils: `2.2.2-dev`
++ Updated codec: `5.4.1-dev`
++ Updated kotlin: `1.8.22`
++ Removed sailfish-utils
 
 ## 0.3.0
 
