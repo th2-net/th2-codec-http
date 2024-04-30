@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 Exactpro (Exactpro Systems Limited)
+ * Copyright 2020-2024 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ class DecodeTest {
         assertEquals(3, decodedBody.size)
         assertEquals(200, decodedBody["statusCode"])
         assertEquals("OK", decodedBody["reason"])
-        val decodedHeaders = decodedBody["headers"] as Map<String, String>
+        val decodedHeaders = decodedBody["headers"] as Map<*, *>
         assertEquals(2, decodedHeaders.size)
         assertEquals("text/plain", decodedHeaders["Content-Type"])
         assertEquals("0", decodedHeaders["Content-Length"])
@@ -165,7 +165,7 @@ class DecodeTest {
         assertEquals("Request", decodedMessage.type)
         assertEquals("GET", decodedBody["method"])
         assertEquals(URI("http://www.test.com/hello.txt"), decodedBody["uri"])
-        val decodedHeaders = decodedBody["headers"] as Map<String, String>
+        val decodedHeaders = decodedBody["headers"] as Map<*, *>
         assertEquals(3, decodedHeaders.size)
         assertEquals("OpenSSL/0.9.7l", decodedHeaders["User-Agent"])
         assertEquals("www.test.com", decodedHeaders["Host"])
