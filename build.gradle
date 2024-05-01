@@ -1,16 +1,19 @@
 plugins {
-    id 'com.palantir.docker' version '0.25.0'
-    id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}"
-    id 'application'
-    id 'org.jetbrains.kotlin.kapt' version "${kotlin_version}"
-    id "org.owasp.dependencycheck" version "8.2.1"
+    id "org.jetbrains.kotlin.jvm" version "$kotlin_version"
+    id "org.jetbrains.kotlin.kapt" version "$kotlin_version"
+    id("java-library")
+    id("maven-publish")
+
+    id "com.exactpro.th2.gradle.publish" version "0.0.6"
+    id "com.exactpro.th2.gradle.component" version "0.0.6"
 }
 
 group = 'com.exactpro.th2'
 version = release_version
 
-sourceCompatibility = 11
-targetCompatibility = 11
+kotlin {
+    jvmToolchain(11)
+}
 
 repositories {
     mavenCentral()
@@ -30,85 +33,31 @@ repositories {
     }
 }
 
-jar {
-    manifest {
-        attributes(
-                'Created-By': "${System.getProperty('java.version')} (${System.getProperty('java.vendor')})",
-                'Specification-Title': '',
-                'Specification-Vendor': 'Exactpro Systems LLC',
-                'Implementation-Title': project.archivesBaseName,
-                'Implementation-Vendor': 'Exactpro Systems LLC',
-                'Implementation-Vendor-Id': 'com.exactpro',
-                'Implementation-Version': project.version
-        )
-    }
-}
-
 dependencies {
-    api platform("com.exactpro.th2:bom:4.5.0")
-
-    implementation "com.exactpro.th2:common:5.7.2-dev"
-    implementation "com.exactpro.th2:common-utils:2.2.2-dev"
-    implementation "com.exactpro.th2:codec:5.4.1-dev"
+    implementation "com.exactpro.th2:common:5.10.1-dev"
+    implementation "com.exactpro.th2:common-utils:2.2.3-dev"
+    implementation "com.exactpro.th2:codec:5.5.0-dev"
 
     compileOnly "com.google.auto.service:auto-service:1.1.1"
-    annotationProcessor "com.google.auto.service:auto-service:1.1.1"
     kapt "com.google.auto.service:auto-service:1.1.1"
 
     implementation "io.github.microutils:kotlin-logging:3.0.5"
-    implementation "com.athaydes.rawhttp:rawhttp-core:2.4.1"
+    implementation "com.athaydes.rawhttp:rawhttp-core:2.6.0"
 
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit5"
-    testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.3.1'
+    testImplementation 'io.strikt:strikt-core:0.34.1'
 }
 
 application {
-    mainClassName 'com.exactpro.th2.codec.MainKt'
-}
-
-applicationName = 'service'
-
-distTar {
-    archiveName "${applicationName}.tar"
-}
-
-dockerPrepare {
-    dependsOn distTar
-}
-
-docker {
-    copySpec.from(tarTree("$buildDir/distributions/${applicationName}.tar"))
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-}
-
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+    mainClass.set("com.exactpro.th2.codec.MainKt")
 }
 
 test {
     useJUnitPlatform()
 }
 
-configurations {
-    compileClasspath {
-        resolutionStrategy.activateDependencyLocking()
-    }
-}
-
 dependencyCheck {
-    formats = ['SARIF', 'JSON', 'HTML']
-    failBuildOnCVSS = 5
     suppressionFile = file('suppressions.xml')
-    analyzers {
-        assemblyEnabled = false
-        nugetconfEnabled = false
-        nodeEnabled = false
-    }
 }

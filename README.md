@@ -1,4 +1,4 @@
-# HTTP Codec v0.4.0
+# HTTP Codec v0.5.0
 
 This microservice can encode and decode HTTP messages
 
@@ -121,6 +121,15 @@ spec:
 ```
 
 # Release notes
+
+## 0.5.0
++ Migrated to th2 gradle plugin: `0.0.6`
++ Updated:
+  + bom `4.6.1`
+  + common: `5.10.1-dev`
+  + common-utils: `2.2.3-dev`
+  + codec: `5.5.0-dev`
+  + rawhttp-core: `2.6.0`
 
 ## 0.4.0
 
