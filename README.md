@@ -130,7 +130,7 @@ spec:
   + kotlin-logging: `7.0.13`
   + common: `5.16.1-dev`
   + common-utils: `2.4.0-dev`
-  + codec: `5.6.0-dev`
+  + codec: `5.6.1-dev`
 
 ## 0.5.0
 + Migrated to th2 gradle plugin: `0.0.6`
