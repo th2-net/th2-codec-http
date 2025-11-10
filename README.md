@@ -124,8 +124,11 @@ spec:
 
 ## 0.6.0
 
++ Produce multi-platform docker image
+  + migrated to [amazoncorretto:11-alpine-jdk](https://hub.docker.com/layers/library/amazoncorretto/11-alpine-jdk) docker image as base
+
 + Updated:
-  + th2 gradle plugin: `0.3.9` (bom: `4.14.1`)
+  + th2 gradle plugin: `0.3.10` (bom: `4.14.2`)
   + kotlin: `2.2.10`
   + kotlin-logging: `7.0.13`
   + common: `5.16.1-dev`
