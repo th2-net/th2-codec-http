@@ -13,9 +13,6 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.th2.common) {
-        exclude group: 'com.exactpro.th2', module: 'task-utils'
-    }
     implementation(libs.th2.common.utils)
     implementation(libs.th2.codec)
 
