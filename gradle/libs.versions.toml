@@ -7,7 +7,7 @@ th2-common-utils = { group = "com.exactpro.th2", name = "common-utils", version 
 th2-codec = { group = "com.exactpro.th2", name = "codec", version = "5.6.3-dev" }
 
 rawhttp-core = { group = "com.athaydes.rawhttp", name = "rawhttp-core", version = "2.6.0" }
-kotlin-logging = { group = "io.github.oshai", name = "kotlin-logging", version = "7.0.14" }
+kotlin-logging = { group = "io.github.oshai", name = "kotlin-logging", version = "8.0.01" }
 
 auto-service = { group = "com.google.auto.service", name = "auto-service", version = "1.1.1" }
 
